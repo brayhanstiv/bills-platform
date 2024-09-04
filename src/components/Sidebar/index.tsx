@@ -44,7 +44,7 @@ export const items: SidebarItem[] = [
   },
   {
     key: "upload-bill",
-    href: "/admin/upload-bill",
+    href: "/admin/uploadBill",
     icon: "solar:upload-minimalistic-bold",
     title: "Subir factura",
   },

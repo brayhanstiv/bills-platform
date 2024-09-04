@@ -27,7 +27,7 @@ const App = () => {
           }
         >
           <Route path='home' element={<HomePage />} />
-          <Route path='upload-bill' element={<UploadBillPage />} />
+          <Route path='uploadBill' element={<UploadBillPage />} />
           <Route path='' element={<HomePage />} />
         </Route>
         <Route path='/' element={<Auth />}>
