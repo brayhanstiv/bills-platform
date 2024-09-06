@@ -16,6 +16,14 @@ import {
   Selection,
   SortDescriptor,
   Spinner,
+  Code,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  useDisclosure,
+  ModalFooter,
+  Link,
 } from "@nextui-org/react";
 import { Icon } from "@iconify/react";
 import axios from "axios";
@@ -26,12 +34,12 @@ const INITIAL_VISIBLE_COLUMNS = [
   "emisor",
   "receptor",
   "payment_method",
-  "subtotal",
-  "vat",
   "total",
+  "actions",
 ];
 
 type Invoice = {
+  id: string;
   deferred_credit?: string;
   discounts: number;
   due_date: string;
@@ -61,6 +69,7 @@ const columns = [
   { name: "SUBTOTAL", uid: "subtotal" },
   { name: "IVA", uid: "vat", sortable: true },
   { name: "TOTAL", uid: "total" },
+  { name: "ACCIONES", uid: "actions" },
 ];
 
 const paymentOptions = [
@@ -85,6 +94,7 @@ const HomePage = () => {
 
   const [page, setPage] = React.useState(1);
   const [data, setData] = React.useState<Invoice[]>([]);
+  const [invoice, setInvoice] = React.useState<Invoice>();
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -135,6 +145,8 @@ const HomePage = () => {
     });
   }, [sortDescriptor, items]);
 
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
   const getAllInvoices = async () => {
     try {
       const url =
@@ -146,41 +158,59 @@ const HomePage = () => {
     }
   };
 
+  const getInvoice = async (id: string) => {
+    setInvoice(data.find((invoice) => invoice.id === id));
+  };
+
   React.useEffect(() => {
     getAllInvoices();
   }, []);
 
-  const renderCell = React.useCallback(
-    (invoice: Invoice, columnKey: React.Key) => {
-      const cellValue = invoice[columnKey as keyof Invoice];
+  const renderCell = (invoice: Invoice, columnKey: React.Key) => {
+    const cellValue = invoice[columnKey as keyof Invoice];
 
-      switch (columnKey) {
-        case "number":
-          return <p>{invoice.invoice_number}</p>;
-        case "date":
-          return <p>{invoice.due_date}</p>;
-        case "emisor":
-          return <p>{invoice.issuer}</p>;
-        case "receptor":
-          return <p>{invoice.payer}</p>;
-        case "payment_method":
-          return (
-            <p>{invoice.payment_method === "credit" ? "Crédito" : "Débito"}</p>
-          );
-        case "subtotal":
-          return <p>{invoice.net_total}</p>;
-        case "vat":
-          return <p>{invoice.vat}</p>;
-        case "taxes":
-          return <p>{invoice.other_taxes}</p>;
-        case "total":
-          return <p>{invoice.total}</p>;
-        default:
-          return cellValue;
-      }
-    },
-    []
-  );
+    switch (columnKey) {
+      case "number":
+        return <p>{invoice.invoice_number}</p>;
+      case "date":
+        return <p>{invoice.due_date}</p>;
+      case "emisor":
+        return <p>{invoice.issuer}</p>;
+      case "receptor":
+        return <p>{invoice.payer}</p>;
+      case "payment_method":
+        return (
+          <p>{invoice.payment_method === "credit" ? "Crédito" : "Débito"}</p>
+        );
+      case "subtotal":
+        return <p>{invoice.net_total}</p>;
+      case "vat":
+        return <p>{invoice.vat}</p>;
+      case "taxes":
+        return <p>{invoice.other_taxes}</p>;
+      case "total":
+        return <p>{invoice.total}</p>;
+      case "actions":
+        return (
+          <div className='flex justify-center cursor-pointer'>
+            <Link
+              onPress={() => {
+                getInvoice(invoice.id);
+                onOpen();
+              }}
+            >
+              <Icon
+                className='text-gray-500'
+                icon={"solar:eye-linear"}
+                width={24}
+              />
+            </Link>
+          </div>
+        );
+      default:
+        return cellValue;
+    }
+  };
 
   const onNextPage = React.useCallback(() => {
     if (page < pages) {
@@ -364,46 +394,73 @@ const HomePage = () => {
   }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
   return (
-    <Table
-      aria-label='Tabla de facturas'
-      isHeaderSticky
-      bottomContent={bottomContent}
-      bottomContentPlacement='outside'
-      classNames={{
-        wrapper: "max-h-[724px]",
-      }}
-      selectedKeys={selectedKeys}
-      selectionMode='multiple'
-      sortDescriptor={sortDescriptor}
-      topContent={topContent}
-      topContentPlacement='outside'
-      onSelectionChange={setSelectedKeys}
-      onSortChange={setSortDescriptor}
-    >
-      <TableHeader columns={headerColumns}>
-        {(column) => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === "total" ? "center" : "start"}
-            allowsSorting={column.sortable}
-          >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody
-        emptyContent={"No hay facturas encontradas"}
-        loadingContent={<Spinner label='Cargando...' />}
+    <>
+      <Table
+        aria-label='Tabla de facturas'
+        isHeaderSticky
+        bottomContent={bottomContent}
+        bottomContentPlacement='outside'
+        classNames={{
+          wrapper: "max-h-[724px]",
+        }}
+        selectionMode='multiple'
+        selectedKeys={selectedKeys}
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement='outside'
+        onSelectionChange={setSelectedKeys}
+        onSortChange={setSortDescriptor}
       >
-        {sortedItems.map((item, key) => (
-          <TableRow key={key}>
-            {(columnKey) => (
-              <TableCell>{renderCell(item, columnKey)}</TableCell>
-            )}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        <TableHeader columns={headerColumns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}
+              allowsSorting={column.sortable}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody
+          emptyContent={"No hay facturas encontradas"}
+          items={sortedItems}
+          loadingContent={<Spinner label='Cargando...' />}
+        >
+          {items.map((item) => (
+            <TableRow key={item.id}>
+              {(columnKey) => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        size='4xl'
+        className='bg-default-50'
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>File content</ModalHeader>
+              <ModalBody>
+                <Code className='whitespace-pre-wrap'>
+                  {`id: ${invoice?.id}\ninvoice_number: ${invoice?.invoice_number}\nissue_date: ${invoice?.issue_date}\ndeferred_credit: ${invoice?.deferred_credit}\ndiscounts: ${invoice?.discounts}\ndue_date: ${invoice?.due_date}\nexemptions: ${invoice?.exemptions}\nissuer: ${invoice?.issuer}\npayer: ${invoice?.payer}\npayment_method: ${invoice?.payment_method}\nnet_total: ${invoice?.net_total}\nother_taxes: ${invoice?.other_taxes}\nreading_date: ${invoice?.reading_date}\ntax_issuer_id: ${invoice?.tax_issuer_id}\ntax_payer_id: ${invoice?.tax_payer_id}\ntotal: ${invoice?.total}\nvat: ${invoice?.vat}`}
+                </Code>
+              </ModalBody>
+              <ModalFooter>
+                <Button color='danger' variant='light' onPress={onClose}>
+                  Cerrar
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 

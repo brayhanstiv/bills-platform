@@ -13,9 +13,8 @@ const UploadBillPage = () => {
 
   const Toast = Swal.mixin({
     toast: true,
-    position: "bottom-end",
+    position: "top-end",
     showConfirmButton: false,
-    timer: 3000,
     timerProgressBar: true,
     didOpen: (toast) => {
       toast.onmouseenter = Swal.stopTimer;
@@ -27,14 +26,18 @@ const UploadBillPage = () => {
     try {
       const formData = new FormData();
       formData.append("file", selectedFile!);
+      Toast.fire({
+        icon: "info",
+        text: "Subiendo factura...",
+      });
       const url =
         "https://backendfacturacion-dot-chat-socialcog.ue.r.appspot.com/Invoices/";
       await axios.post(url, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      await Toast.fire({
+      Toast.fire({
         icon: "success",
-        title: "Se subió la factura correctamente",
+        text: "Se subió la factura correctamente",
       });
     } catch (error) {
       console.log("Unexpected error " + error);
