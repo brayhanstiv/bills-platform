@@ -12,8 +12,14 @@ import { useNavigate } from "react-router-dom";
 
 // Firebase
 import { auth } from "../../firebase_config";
+import { Icon } from "@iconify/react";
 
-export default function App() {
+type NavbarProps = {
+  onToggle?: () => void;
+  isCompact?: boolean;
+};
+
+const AdminNavbar = (props: NavbarProps) => {
   const navigate = useNavigate();
 
   const logout = async () => {
@@ -25,6 +31,16 @@ export default function App() {
   return (
     <Navbar shouldHideOnScroll maxWidth='full'>
       <NavbarBrand>
+        <Icon
+          className='text-gray-500 mr-2 cursor-pointer'
+          icon={
+            props.isCompact
+              ? "hugeicons:sidebar-right-01"
+              : "hugeicons:sidebar-left-01"
+          }
+          width={24}
+          onClick={props.onToggle}
+        />
         <p className='font-bold text-inherit'>LAIT Smart Documents</p>
       </NavbarBrand>
       <NavbarContent justify='end'>
@@ -42,4 +58,6 @@ export default function App() {
       </NavbarContent>
     </Navbar>
   );
-}
+};
+
+export default AdminNavbar;

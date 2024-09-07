@@ -400,6 +400,7 @@ const HomePage = () => {
         isHeaderSticky
         bottomContent={bottomContent}
         bottomContentPlacement='outside'
+        className='bg-background'
         classNames={{
           wrapper: "max-h-[724px]",
         }}
@@ -436,12 +437,7 @@ const HomePage = () => {
           ))}
         </TableBody>
       </Table>
-      <Modal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        size='4xl'
-        className='bg-default-50'
-      >
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange} size='4xl'>
         <ModalContent>
           {(onClose) => (
             <>
