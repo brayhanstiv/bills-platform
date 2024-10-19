@@ -43,12 +43,6 @@ export const items: SidebarItem[] = [
     title: "Inicio",
   },
   {
-    key: "upload-bill",
-    href: "/admin/uploadBill",
-    icon: "solar:upload-minimalistic-bold",
-    title: "Subir factura",
-  },
-  {
     key: "operations",
     href: "#",
     icon: "solar:library-linear",
