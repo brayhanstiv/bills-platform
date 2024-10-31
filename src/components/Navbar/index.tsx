@@ -9,11 +9,6 @@ import {
 } from "@nextui-org/react";
 import { Icon } from "@iconify/react";
 import { cn } from "@nextui-org/react";
-import { signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
-
-// Firebase
-import { auth } from "../../firebase_config";
 
 type AdminNavbarProps = {
   onToggle?: () => void;
@@ -21,14 +16,7 @@ type AdminNavbarProps = {
 };
 
 const AdminNavbar = (props: AdminNavbarProps) => {
-  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-
-  const logout = async () => {
-    await signOut(auth);
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
 
   return (
     <Navbar
