@@ -1,3 +1,4 @@
+// Packages
 import React from "react";
 import {
   Table,
@@ -17,26 +18,39 @@ import {
   SortDescriptor,
   Spinner,
   Link,
+  DateRangePicker,
+  RangeValue,
+  CalendarDate,
 } from "@nextui-org/react";
 import { Icon } from "@iconify/react";
-import { Treasury } from "../../common/types";
-import { getAllTreasuries, uploadTreasury } from "../../common/api/treasury";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
+
+// Common
+import { Deptor, Treasury } from "../../common/types";
+import { currencyFormatter } from "../../common/methods";
+import { getAllTreasuries, uploadTreasury } from "../../common/api/treasury";
+
+// Components
 import ModalResponse from "../../components/Modals/ModalResponse";
 import ModalUpload from "../../components/Modals/ModalUpload";
 
-const INITIAL_VISIBLE_COLUMNS = ["id", "reading_date", "deudores", "actions"];
+const INITIAL_VISIBLE_COLUMNS = [
+  "id",
+  "date",
+  "reading_date",
+  "deudores",
+  "total",
+  "actions",
+];
 
 const columns = [
   { name: "ID", uid: "id", sortable: true },
+  { name: "FECHA", uid: "date" },
   { name: "FECHA LECTURA", uid: "reading_date" },
   { name: "CANT. DEUDORES", uid: "deudores" },
+  { name: "TOTAL", uid: "total" },
   { name: "ACCIONES", uid: "actions" },
-];
-
-const paymentOptions = [
-  { uid: 1, value: "credit", name: "crédito" },
-  { uid: 2, value: "debit", name: "débito" },
 ];
 
 const TreasuriesPage = () => {
@@ -47,7 +61,6 @@ const TreasuriesPage = () => {
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
-  const [paymentFilter, setPaymentFilter] = React.useState<Selection>("all");
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "age",
@@ -57,7 +70,7 @@ const TreasuriesPage = () => {
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(1);
   const [data, setData] = React.useState<Treasury[]>([]);
-  const [selectedFile, setSelectedFile] = React.useState<string | Blob>();
+  const [file, setFile] = React.useState<File>();
   const [modalResponse, setModalResponse] = React.useState<{
     type: "success" | "error";
     message: string;
@@ -65,6 +78,8 @@ const TreasuriesPage = () => {
     type: "success",
     message: "Se subió la factura correctamente",
   });
+  const [date, setDate] =
+    React.useState<RangeValue<CalendarDate | CalendarDate>>();
 
   // Loadings
   const [loading, setLoading] = React.useState(true);
@@ -87,24 +102,26 @@ const TreasuriesPage = () => {
   }, [visibleColumns]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredInvoices = [...data];
+    let filteredTreasuries = [...data];
 
     if (hasSearchFilter) {
-      filteredInvoices = filteredInvoices.filter((item) =>
+      filteredTreasuries = filteredTreasuries.filter((item) =>
         item.id.toLowerCase().includes(filterValue.toLowerCase())
       );
     }
-    if (
-      paymentFilter !== "all" &&
-      Array.from(paymentFilter).length !== paymentOptions.length
-    ) {
-      filteredInvoices = filteredInvoices.filter((item) =>
-        Array.from(paymentFilter).includes(item.id)
-      );
+    if (date) {
+      filteredTreasuries = filteredTreasuries.filter((item) => {
+        const fecha = new Date(item.date!);
+        console.log(fecha.toLocaleDateString("en-US"));
+        return (
+          item.date! >= date.start.toString() &&
+          item.date! <= date.end.toString()
+        );
+      });
     }
 
-    return filteredInvoices;
-  }, [data, filterValue, paymentFilter]);
+    return filteredTreasuries;
+  }, [data, filterValue]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -137,9 +154,18 @@ const TreasuriesPage = () => {
   const renderCell: any = (treasury: Treasury, columnKey: React.Key) => {
     const cellValue = treasury[columnKey as keyof Treasury];
 
+    let date = new Date();
+    if (treasury.date) {
+      date = new Date(treasury.date);
+    }
+
     switch (columnKey) {
+      case "date":
+        return <p>{date.toLocaleDateString()}</p>;
+      case "total":
+        return <p>{currencyFormatter(treasury.total)}</p>;
       case "deudores":
-        return <p>{treasury.Deudores.length}</p>;
+        return <p>{treasury.deudores.length}</p>;
       case "actions":
         return (
           <div className='flex justify-center cursor-pointer'>
@@ -191,13 +217,43 @@ const TreasuriesPage = () => {
     setPage(1);
   }, []);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedFile(event.target.files![0]);
+  /* const packFiles = (files: FileList) => {
+    const formData = new FormData();
+    [...files].forEach((file, i) => {
+      formData.append(`file-${i}`, file, file.name);
+    });
+    return formData;
   };
+
+  const handleUpload = () => {
+    if (files!.length) {
+      const data = packFiles(files!);
+      uploadFiles(data);
+    }
+  };
+
+  const uploadFiles = async (data: FormData) => {
+    setLoadingFile(true);
+    const response = await uploadTreasury(data);
+    setLoadingFile(false);
+    onOpenReponse(true);
+    if (response) {
+      setModalResponse({
+        type: "success",
+        message: "Se subió la factura exitosamente",
+      });
+    } else {
+      setModalResponse({
+        type: "error",
+        message: "No se pudo subir la factura correctamente",
+      });
+    }
+  }; */
 
   const handleUpload = async () => {
     const formData = new FormData();
-    formData.append("file", selectedFile!);
+    formData.append("file", file!);
+    console.log(formData);
     setLoadingFile(true);
     const response = await uploadTreasury(formData);
     setLoadingFile(false);
@@ -213,6 +269,68 @@ const TreasuriesPage = () => {
         message: "No se pudo subir la factura correctamente",
       });
     }
+  };
+
+  const formatData = () => {
+    let deptors: Deptor[] = [];
+    filteredItems.map((item) => {
+      return item.deudores.map((i) => {
+        return deptors.push({
+          ...i,
+          date: item.date,
+          dpto_pagaduria: item.dpto_pagaduria,
+          id_fideicomiso: item.id_fideicomiso,
+          id_pagaduria: item.id_pagaduria,
+          nm_fideicomiso: item.nm_fideicomiso,
+          nm_pagaduria: item.nm_pagaduria,
+        });
+      });
+    });
+
+    const titleKeys = Object.keys(deptors[0]);
+
+    const refinedData = [];
+    refinedData.push(titleKeys);
+
+    deptors.forEach((item) => {
+      refinedData.push(Object.values(item));
+    });
+    return refinedData;
+  };
+
+  const downloadCSV = () => {
+    const formatItems = formatData();
+
+    // Creating csv
+    let csvContent = "";
+
+    formatItems.forEach((row) => {
+      csvContent += row.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8," });
+    const objUrl = URL.createObjectURL(blob);
+    const date = new Date();
+    const link = document.createElement("a");
+    link.href = objUrl;
+    link.download = `Lait-${date.toLocaleDateString()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadExcel = () => {
+    // Get data
+    const formatItems = formatData();
+
+    // Creating Sheet
+    const book = XLSX.utils.book_new();
+    const sheet = XLSX.utils.json_to_sheet(formatItems);
+    const date = new Date();
+
+    XLSX.utils.book_append_sheet(book, sheet, "deudores");
+
+    XLSX.writeFile(book, `Lait-${date.toLocaleDateString()}.xlsx`);
   };
 
   const topContent = React.useMemo(() => {
@@ -235,34 +353,42 @@ const TreasuriesPage = () => {
             onValueChange={onSearchChange}
           />
           <div className='flex gap-3'>
+            <DateRangePicker
+              value={date}
+              onChange={setDate}
+              className='max-w-[248px]'
+            />
             <Dropdown>
               <DropdownTrigger className='hidden sm:flex'>
                 <Button
+                  color='danger'
                   endContent={
                     <Icon
-                      className='text-default-300'
-                      icon='hugeicons:arrow-down-01'
+                      icon={"solar:download-minimalistic-linear"}
                       width={20}
                     />
                   }
-                  variant='flat'
                 >
-                  Método de pago
+                  Exportar
                 </Button>
               </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label='Table Columns'
-                closeOnSelect={false}
-                selectedKeys={paymentFilter}
-                selectionMode='multiple'
-                onSelectionChange={setPaymentFilter}
-              >
-                {paymentOptions.map((payment) => (
-                  <DropdownItem key={payment.value} className='capitalize'>
-                    {payment.name}
-                  </DropdownItem>
-                ))}
+              <DropdownMenu disallowEmptySelection aria-label='Table Columns'>
+                <DropdownItem
+                  startContent={<Icon icon='bi:filetype-csv' width={24} />}
+                  className='capitalize'
+                  onClick={downloadCSV}
+                >
+                  CSV
+                </DropdownItem>
+                <DropdownItem
+                  startContent={
+                    <Icon icon='vscode-icons:file-type-excel' width={24} />
+                  }
+                  className='capitalize'
+                  onClick={downloadExcel}
+                >
+                  Excel
+                </DropdownItem>
               </DropdownMenu>
             </Dropdown>
             <Dropdown>
@@ -322,7 +448,6 @@ const TreasuriesPage = () => {
     );
   }, [
     filterValue,
-    paymentFilter,
     visibleColumns,
     onSearchChange,
     onRowsPerPageChange,
@@ -374,13 +499,13 @@ const TreasuriesPage = () => {
       <ModalUpload
         isOpen={isOpenUpload}
         loading={loadingFile}
-        handleFileUpload={handleFileUpload}
+        file={file}
+        setFile={setFile}
         handleUpload={handleUpload}
         onClose={() => onOpenUpload(false)}
       />
       <ModalResponse
         type={modalResponse.type}
-        icon={"solar:close-circle-linear"}
         title={modalResponse.message}
         isOpen={isOpenReponse}
         onClose={() => onOpenReponse(false)}
@@ -405,7 +530,11 @@ const TreasuriesPage = () => {
           {(column) => (
             <TableColumn
               key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}
+              align={
+                column.uid === "actions" || column.uid === "total"
+                  ? "center"
+                  : "start"
+              }
               allowsSorting={column.sortable}
             >
               {column.name}

@@ -1,3 +1,5 @@
+import { SidebarItemType } from "./enums";
+
 export type Invoice = {
   payer: string;
   discounts: number;
@@ -19,20 +21,40 @@ export type Invoice = {
 };
 
 export type Treasury = {
+  date: string;
+  deudores: Deptor[];
+  dpto_pagaduria: string;
   id: string;
+  id_fideicomiso: string;
+  id_pagaduria: string;
+  nm_fideicomiso: string;
+  nm_pagaduria: string;
   reading_date: string;
-  Deudores: Deptor[];
+  total: number;
 };
 
 export type Deptor = {
-  FECHA: string;
-  AÑO: number;
-  FIDEICOMISO: string;
-  PAGADURIA: string;
-  DEUDOR: string;
-  MES: number;
-  "ID PAGADURIA": string;
-  "ID FIDEICOMISO": string;
-  ID_DEUDOR: string;
-  VALOR: number;
+  id_deudor: string;
+  nm_deudor: string;
+  valor?: number;
+  date?: string;
+  dpto_pagaduria?: string;
+  id_fideicomiso?: string;
+  id_pagaduria?: string;
+  nm_fideicomiso?: string;
+  nm_pagaduria?: string;
+  reading_date?: string;
+  total?: number;
+};
+
+export type SidebarItem = {
+  key: string;
+  title: string;
+  icon?: string;
+  href?: string;
+  type?: SidebarItemType.Nest;
+  startContent?: React.ReactNode;
+  endContent?: React.ReactNode;
+  items?: SidebarItem[];
+  className?: string;
 };

@@ -1,5 +1,4 @@
-"use client";
-
+// Packages
 import {
   Accordion,
   AccordionItem,
@@ -15,86 +14,17 @@ import {
   ListboxSection,
 } from "@nextui-org/react";
 import { Icon } from "@iconify/react";
-
-import { cn } from "../../common/cn";
 import { useNavigate } from "react-router-dom";
 
-export enum SidebarItemType {
-  Nest = "nest",
-}
+// Common
+import { cn } from "../../common/cn";
+import { SidebarItem } from "../../common/types";
+import { SidebarItemType } from "../../common/enums";
 
-export type SidebarItem = {
-  key: string;
-  title: string;
-  icon?: string;
-  href?: string;
-  type?: SidebarItemType.Nest;
-  startContent?: React.ReactNode;
-  endContent?: React.ReactNode;
-  items?: SidebarItem[];
-  className?: string;
-};
-
-export const items: SidebarItem[] = [
-  {
-    key: "home",
-    href: "/admin/home",
-    icon: "solar:home-2-linear",
-    title: "Inicio",
-  },
-  {
-    key: "operations",
-    href: "#",
-    icon: "solar:library-linear",
-    title: "Operaciones IA",
-    items: [
-      {
-        key: "financial",
-        href: "#",
-        icon: "solar:pie-chart-3-linear",
-        title: "Financieras",
-      },
-      {
-        key: "predictive",
-        href: "#",
-        icon: "solar:colour-tuneing-linear",
-        title: "Predictivas",
-      },
-      {
-        key: "risk-profile",
-        href: "#",
-        icon: "solar:round-graph-linear",
-        title: "De perfil de riesgo",
-      },
-      {
-        key: "analytics",
-        href: "#",
-        icon: "solar:course-up-linear",
-        title: "Análisis",
-      },
-      {
-        key: "time",
-        href: "#",
-        icon: "hugeicons:clock-01",
-        title: "Tiempo",
-      },
-      {
-        key: "credit",
-        href: "#",
-        icon: "solar:card-linear",
-        title: "Crédito",
-      },
-      {
-        key: "factoring",
-        href: "#",
-        icon: "solar:code-2-linear",
-        title: "Factoring",
-      },
-    ],
-  },
-];
-
-export type SidebarProps = Omit<ListboxProps<SidebarItem>, "children"> & {
+export type InvoiceSidebarProps = Omit<
+  ListboxProps<SidebarItem>,
+  "children"
+> & {
   items: SidebarItem[];
   isCompact?: boolean;
   hideEndContent?: boolean;
@@ -105,7 +35,7 @@ export type SidebarProps = Omit<ListboxProps<SidebarItem>, "children"> & {
   onSelect?: (key: string) => void;
 };
 
-const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
+const InvoiceSidebar = React.forwardRef<HTMLElement, InvoiceSidebarProps>(
   (
     {
       items,
@@ -386,6 +316,6 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
   }
 );
 
-Sidebar.displayName = "Sidebar";
+InvoiceSidebar.displayName = "Treasury Sidebar";
 
-export default Sidebar;
+export default InvoiceSidebar;

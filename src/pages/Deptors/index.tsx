@@ -23,38 +23,33 @@ import { useParams } from "react-router-dom";
 
 // Common
 import { Deptor } from "../../common/types";
-import { getDeptors } from "../../common/api/treasury";
+import { getTreasuryById } from "../../common/api/treasury";
 import { currencyFormatter } from "../../common/methods";
 
 const INITIAL_VISIBLE_COLUMNS = [
-  "FECHA",
-  "ID FIDEICOMISO",
-  "FIDEICOMISO",
-  "ID PAGADURIA",
-  "PAGADURIA",
-  "AÑO",
-  "MES",
-  "ID_DEUDOR",
-  "DEUDOR",
-  "VALOR",
+  "date",
+  "id_fideicomiso",
+  "nm_fideicomiso",
+  "id_pagaduria",
+  "nm_pagaduria",
+  "year",
+  "month",
+  "id_deudor",
+  "nm_deudor",
+  "valor",
 ];
 
 const columns = [
-  { name: "FECHA", uid: "FECHA" },
-  { name: "ID FIDEICOMISO", uid: "ID FIDEICOMISO" },
-  { name: "FIDEICOMISO", uid: "FIDEICOMISO", sortable: true },
-  { name: "ID PAGADURIA", uid: "ID PAGADURIA" },
-  { name: "PAGADURIA", uid: "PAGADURIA", sortable: true },
-  { name: "AÑO", uid: "AÑO" },
-  { name: "MES", uid: "MES" },
-  { name: "ID DEUDOR", uid: "ID_DEUDOR" },
-  { name: "DEUDOR", uid: "DEUDOR" },
-  { name: "VALOR", uid: "VALOR" },
-];
-
-const paymentOptions = [
-  { uid: 1, value: "credit", name: "crédito" },
-  { uid: 2, value: "debit", name: "débito" },
+  { name: "FECHA", uid: "date" },
+  { name: "ID FIDEICOMISO", uid: "id_fideicomiso" },
+  { name: "FIDEICOMISO", uid: "nm_fideicomiso", sortable: true },
+  { name: "ID PAGADURIA", uid: "id_pagaduria" },
+  { name: "PAGADURIA", uid: "nm_pagaduria", sortable: true },
+  { name: "AÑO", uid: "year" },
+  { name: "MES", uid: "month" },
+  { name: "ID DEUDOR", uid: "id_deudor" },
+  { name: "DEUDOR", uid: "nm_deudor" },
+  { name: "VALOR", uid: "valor" },
 ];
 
 const DeptorsPage = () => {
@@ -65,7 +60,6 @@ const DeptorsPage = () => {
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
-  const [paymentFilter, setPaymentFilter] = React.useState<Selection>("all");
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "age",
@@ -90,24 +84,16 @@ const DeptorsPage = () => {
   }, [visibleColumns]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredInvoices = [...data];
+    let filteredDeptors = [...data];
 
     if (hasSearchFilter) {
-      filteredInvoices = filteredInvoices.filter((item) =>
-        item.ID_DEUDOR.toLowerCase().includes(filterValue.toLowerCase())
-      );
-    }
-    if (
-      paymentFilter !== "all" &&
-      Array.from(paymentFilter).length !== paymentOptions.length
-    ) {
-      filteredInvoices = filteredInvoices.filter((item) =>
-        Array.from(paymentFilter).includes(item.ID_DEUDOR)
-      );
+      filteredDeptors = filteredDeptors.filter((item) => {
+        item.nm_deudor.toLowerCase().includes(filterValue.toLowerCase());
+      });
     }
 
-    return filteredInvoices;
-  }, [data, filterValue, paymentFilter]);
+    return filteredDeptors;
+  }, [data, filterValue]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -127,8 +113,22 @@ const DeptorsPage = () => {
   }, [sortDescriptor, items]);
 
   const getAllDeptors = async () => {
-    const response = await getDeptors(id!);
-    setData(response);
+    const response = await getTreasuryById(id!);
+    if (response) {
+      let deptors: Deptor[] = [];
+      response.deudores.map((item) =>
+        deptors.push({
+          ...item,
+          date: response.date,
+          dpto_pagaduria: response.dpto_pagaduria,
+          id_fideicomiso: response.id_fideicomiso,
+          id_pagaduria: response.id_pagaduria,
+          nm_fideicomiso: response.nm_fideicomiso,
+          nm_pagaduria: response.nm_pagaduria,
+        })
+      );
+      setData(deptors);
+    }
     setLoading(false);
   };
 
@@ -139,10 +139,29 @@ const DeptorsPage = () => {
 
   const renderCell: any = (deptor: Deptor, columnKey: React.Key) => {
     const cellValue = deptor[columnKey as keyof Deptor];
-
+    let date = new Date();
+    if (deptor.date) {
+      date = new Date(deptor.date);
+    }
     switch (columnKey) {
-      case "VALOR":
-        return <p>{currencyFormatter(deptor.VALOR)}</p>;
+      case "date":
+        return (
+          <p>{`${date.toLocaleDateString("es-CO", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })}`}</p>
+        );
+      case "year":
+        return <p>{`${date.getFullYear()}`}</p>;
+      case "month":
+        return (
+          <p className='capitalize'>{`${date.toLocaleDateString("es-CO", {
+            month: "long",
+          })}`}</p>
+        );
+      case "valor":
+        return <p>{deptor.valor && currencyFormatter(deptor.valor)}</p>;
       default:
         return cellValue;
     }
@@ -188,7 +207,7 @@ const DeptorsPage = () => {
         <div className='flex justify-between gap-3 items-end'>
           <Input
             isClearable
-            className='w-full sm:max-w-[44%]'
+            className='w-full sm:max-w-[30%]'
             placeholder='Buscar por nombre...'
             startContent={
               <Icon
@@ -202,36 +221,6 @@ const DeptorsPage = () => {
             onValueChange={onSearchChange}
           />
           <div className='flex gap-3'>
-            <Dropdown>
-              <DropdownTrigger className='hidden sm:flex'>
-                <Button
-                  endContent={
-                    <Icon
-                      className='text-default-300'
-                      icon='hugeicons:arrow-down-01'
-                      width={20}
-                    />
-                  }
-                  variant='flat'
-                >
-                  Método de pago
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label='Table Columns'
-                closeOnSelect={false}
-                selectedKeys={paymentFilter}
-                selectionMode='multiple'
-                onSelectionChange={setPaymentFilter}
-              >
-                {paymentOptions.map((payment) => (
-                  <DropdownItem key={payment.value} className='capitalize'>
-                    {payment.name}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
             <Dropdown>
               <DropdownTrigger className='hidden sm:flex'>
                 <Button
@@ -282,7 +271,6 @@ const DeptorsPage = () => {
     );
   }, [
     filterValue,
-    paymentFilter,
     visibleColumns,
     onSearchChange,
     onRowsPerPageChange,
@@ -365,7 +353,7 @@ const DeptorsPage = () => {
           loadingContent={<Spinner label='Cargando...' />}
         >
           {sortedItems.map((item) => (
-            <TableRow key={item.ID_DEUDOR}>
+            <TableRow key={item.id_deudor}>
               {(columnKey) => (
                 <TableCell>{renderCell(item, columnKey)}</TableCell>
               )}

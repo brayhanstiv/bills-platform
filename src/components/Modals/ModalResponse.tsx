@@ -11,7 +11,6 @@ import {
 
 type ConfirmModalProps = {
   type: "error" | "success";
-  icon: string;
   title: string;
   isOpen: boolean;
   onClose: () => void;
@@ -32,7 +31,11 @@ const ModalResponse = (props: ConfirmModalProps) => {
               className={
                 props.type === "error" ? "text-red-500" : "text-green-500"
               }
-              icon={props.icon}
+              icon={
+                props.type === "error"
+                  ? "solar:close-circle-linear"
+                  : "solar:check-circle-linear"
+              }
               width={80}
             />
           </ModalHeader>

@@ -77,7 +77,7 @@ const InvoicesPage = () => {
   const [total, setTotal] = React.useState(2);
   const [data, setData] = React.useState<Invoice[]>([]);
   const [invoice, setInvoice] = React.useState<Invoice>();
-  const [selectedFile, setSelectedFile] = React.useState<string | Blob>();
+  const [file, setFile] = React.useState<File>();
   const [modalResponse, setModalResponse] = React.useState<{
     type: "success" | "error";
     message: string;
@@ -241,13 +241,9 @@ const InvoicesPage = () => {
     setPage(1);
   }, []);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedFile(event.target.files![0]);
-  };
-
   const handleUpload = async () => {
     const formData = new FormData();
-    formData.append("file", selectedFile!);
+    formData.append("file", file!);
     console.log(formData);
     setLoadingFile(true);
     const response = await uploadInvoice(formData);
@@ -425,7 +421,8 @@ const InvoicesPage = () => {
       <ModalUpload
         isOpen={isOpenUpload}
         loading={loadingFile}
-        handleFileUpload={handleFileUpload}
+        file={file}
+        setFile={setFile}
         handleUpload={handleUpload}
         onClose={() => onOpenUpload(false)}
       />
@@ -436,7 +433,6 @@ const InvoicesPage = () => {
       />
       <ModalResponse
         type={modalResponse.type}
-        icon={"solar:close-circle-linear"}
         title={modalResponse.message}
         isOpen={isOpenReponse}
         onClose={() => onOpenReponse(false)}

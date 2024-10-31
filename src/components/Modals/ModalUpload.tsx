@@ -1,3 +1,4 @@
+// Packages
 import {
   Button,
   Modal,
@@ -11,7 +12,8 @@ import {
 type ModalUploadProps = {
   isOpen: boolean;
   loading: boolean;
-  handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  file: File | undefined;
+  setFile: (event: File) => void;
   handleUpload: () => void;
   onClose: () => void;
 };
@@ -23,13 +25,25 @@ const ModalUpload = (props: ModalUploadProps) => {
         {(onClose) => (
           <>
             <ModalHeader>Selecciona archivo</ModalHeader>
-            <ModalBody>
-              <section className='flex justify-center'>
+            <ModalBody className='flex flex-col items-center'>
+              <section>
                 <input
                   type='file'
                   accept='file/*'
-                  onChange={props.handleFileUpload}
+                  onChange={(e) => props.setFile(e.target.files![0])}
                 />
+                {props.file && (
+                  <ul className='my-4'>
+                    {/* {[...props.files].map((f, i) => (
+                      <li key={i}>
+                        {f.name} - {f.type}
+                      </li>
+                    ))} */}
+                    <li>
+                      {props.file.name} - {props.file.type}
+                    </li>
+                  </ul>
+                )}
               </section>
             </ModalBody>
             <ModalFooter>

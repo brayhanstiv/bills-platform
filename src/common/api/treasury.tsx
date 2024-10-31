@@ -2,7 +2,7 @@
 import axios from "axios";
 
 // Types
-import { Treasury, Deptor } from "../types";
+import { Treasury } from "../types";
 
 export const getAllTreasuries = async (): Promise<Treasury[]> => {
   try {
@@ -20,18 +20,18 @@ export const getAllTreasuries = async (): Promise<Treasury[]> => {
   }
 };
 
-export const getDeptors = async (id: string): Promise<Deptor[]> => {
+export const getTreasuryById = async (id: string): Promise<Treasury | null> => {
   try {
     const serviceUri = `https://backendfacturacion-dot-chat-socialcog.ue.r.appspot.com/Treasuries/${id}`;
     const response = await axios.get(serviceUri);
     if (response.status === 200 || response.status === 201) {
-      const data = response.data.Deudores as Deptor[];
+      const data = response.data as Treasury;
       return data;
     }
-    return [];
+    return null;
   } catch (error) {
     console.error("Unexpected error " + error);
-    return [];
+    return null;
   }
 };
 
