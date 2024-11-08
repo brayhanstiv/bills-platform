@@ -20,7 +20,7 @@ export const getInvoices = async (): Promise<Invoice[]> => {
   }
 };
 
-export const uploadInvoice = async (formData: FormData): Promise<boolean> => {
+export const uploadInvoices = async (formData: FormData): Promise<boolean> => {
   try {
     const serviceUri =
       "https://backendfacturacion-dot-chat-socialcog.ue.r.appspot.com/Invoices/";

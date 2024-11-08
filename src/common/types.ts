@@ -58,3 +58,14 @@ export type SidebarItem = {
   items?: SidebarItem[];
   className?: string;
 };
+
+export type ThirdParty = {
+  Id: string;
+  Type: number;
+  DocumentType: string;
+  DocumentNumber: string;
+  Name: string;
+  Phone: string;
+  Address: string;
+  State: boolean;
+};

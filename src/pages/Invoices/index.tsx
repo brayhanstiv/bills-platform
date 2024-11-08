@@ -22,7 +22,7 @@ import {
 import { Icon } from "@iconify/react";
 
 // Common
-import { getInvoices, uploadInvoice } from "../../common/api/invoice";
+import { getInvoices, uploadInvoices } from "../../common/api/invoice";
 import { Invoice } from "../../common/types";
 import { currencyFormatter } from "../../common/methods";
 import ModalUpload from "../../components/Modals/ModalUpload";
@@ -77,7 +77,7 @@ const InvoicesPage = () => {
   const [total, setTotal] = React.useState(2);
   const [data, setData] = React.useState<Invoice[]>([]);
   const [invoice, setInvoice] = React.useState<Invoice>();
-  const [file, setFile] = React.useState<File>();
+  const [files, setFiles] = React.useState<FileList>();
   const [modalResponse, setModalResponse] = React.useState<{
     type: "success" | "error";
     message: string;
@@ -162,32 +162,32 @@ const InvoicesPage = () => {
 
     switch (columnKey) {
       case "emisor":
-        return <p className='text-start'>{invoice.issuer}</p>;
+        return <p className="text-start">{invoice.issuer}</p>;
       case "receptor":
-        return <p className='text-start'>{invoice.payer}</p>;
+        return <p className="text-start">{invoice.payer}</p>;
       case "payment_method":
         return (
           <p>{invoice.payment_method === "credit" ? "Crédito" : "Débito"}</p>
         );
       case "discounts":
         return (
-          <p className='text-end'>{currencyFormatter(invoice.discounts)}</p>
+          <p className="text-end">{currencyFormatter(invoice.discounts)}</p>
         );
       case "subtotal":
         return (
-          <p className='text-end'>{currencyFormatter(invoice.net_total)}</p>
+          <p className="text-end">{currencyFormatter(invoice.net_total)}</p>
         );
       case "vat":
-        return <p className='text-end'>{currencyFormatter(invoice.vat)}</p>;
+        return <p className="text-end">{currencyFormatter(invoice.vat)}</p>;
       case "taxes":
         return (
-          <p className='text-end'>{currencyFormatter(invoice.other_taxes)}</p>
+          <p className="text-end">{currencyFormatter(invoice.other_taxes)}</p>
         );
       case "total":
-        return <p className='text-end'>{currencyFormatter(invoice.total)}</p>;
+        return <p className="text-end">{currencyFormatter(invoice.total)}</p>;
       case "actions":
         return (
-          <div className='flex justify-center cursor-pointer'>
+          <div className="flex justify-center cursor-pointer">
             <Link
               onPress={() => {
                 getInvoice(invoice.id);
@@ -195,7 +195,7 @@ const InvoicesPage = () => {
               }}
             >
               <Icon
-                className='text-gray-500'
+                className="text-gray-500"
                 icon={"solar:eye-linear"}
                 width={24}
               />
@@ -241,7 +241,40 @@ const InvoicesPage = () => {
     setPage(1);
   }, []);
 
-  const handleUpload = async () => {
+  const packFiles = (files: FileList) => {
+    const formData = new FormData();
+    [...files].forEach((file, i) => {
+      formData.append(`file-${i}`, file, file.name);
+    });
+    return formData;
+  };
+
+  const handleUpload = () => {
+    if (files!.length) {
+      const data = packFiles(files!);
+      uploadFiles(data);
+    }
+  };
+
+  const uploadFiles = async (data: FormData) => {
+    setLoadingFile(true);
+    const response = await uploadInvoices(data);
+    setLoadingFile(false);
+    onOpenReponse(true);
+    if (response) {
+      setModalResponse({
+        type: "success",
+        message: "Se subió la factura exitosamente",
+      });
+    } else {
+      setModalResponse({
+        type: "error",
+        message: "No se pudo subir la factura correctamente",
+      });
+    }
+  };
+
+  /*   const handleUpload = async () => {
     const formData = new FormData();
     formData.append("file", file!);
     console.log(formData);
@@ -260,20 +293,20 @@ const InvoicesPage = () => {
         message: "No se pudo subir la factura correctamente",
       });
     }
-  };
+  }; */
 
   const topContent = React.useMemo(() => {
     return (
-      <div className='flex flex-col gap-4'>
-        <div className='flex justify-between gap-3 items-end'>
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between gap-3 items-end">
           <Input
             isClearable
-            className='w-full sm:max-w-[44%]'
-            placeholder='Buscar por nombre...'
+            className="w-full sm:max-w-[44%]"
+            placeholder="Buscar por nombre..."
             startContent={
               <Icon
-                className='text-default-300'
-                icon='hugeicons:search-01'
+                className="text-default-300"
+                icon="hugeicons:search-01"
                 width={20}
               />
             }
@@ -281,69 +314,69 @@ const InvoicesPage = () => {
             onClear={() => onClear()}
             onValueChange={onSearchChange}
           />
-          <div className='flex gap-3'>
+          <div className="flex gap-3">
             <Dropdown>
-              <DropdownTrigger className='hidden sm:flex'>
+              <DropdownTrigger className="hidden sm:flex">
                 <Button
                   endContent={
                     <Icon
-                      className='text-default-300'
-                      icon='hugeicons:arrow-down-01'
+                      className="text-default-300"
+                      icon="hugeicons:arrow-down-01"
                       width={20}
                     />
                   }
-                  variant='flat'
+                  variant="flat"
                 >
                   Método de pago
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
                 disallowEmptySelection
-                aria-label='Table Columns'
+                aria-label="Table Columns"
                 closeOnSelect={false}
                 selectedKeys={paymentFilter}
-                selectionMode='multiple'
+                selectionMode="multiple"
                 onSelectionChange={setPaymentFilter}
               >
                 {paymentOptions.map((payment) => (
-                  <DropdownItem key={payment.value} className='capitalize'>
+                  <DropdownItem key={payment.value} className="capitalize">
                     {payment.name}
                   </DropdownItem>
                 ))}
               </DropdownMenu>
             </Dropdown>
             <Dropdown>
-              <DropdownTrigger className='hidden sm:flex'>
+              <DropdownTrigger className="hidden sm:flex">
                 <Button
                   endContent={
                     <Icon
-                      className='text-default-300'
-                      icon='hugeicons:arrow-down-01'
+                      className="text-default-300"
+                      icon="hugeicons:arrow-down-01"
                       width={20}
                     />
                   }
-                  variant='flat'
+                  variant="flat"
                 >
                   Columnas
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
                 disallowEmptySelection
-                aria-label='Table Columns'
+                aria-label="Table Columns"
                 closeOnSelect={false}
                 selectedKeys={visibleColumns}
-                selectionMode='multiple'
+                selectionMode="multiple"
                 onSelectionChange={setVisibleColumns}
               >
                 {columns.map((column) => (
-                  <DropdownItem key={column.uid} className='capitalize'>
+                  <DropdownItem key={column.uid} className="capitalize">
                     {column.name}
                   </DropdownItem>
                 ))}
               </DropdownMenu>
             </Dropdown>
             <Button
-              color='primary'
+              color="primary"
               onClick={() => onOpenUpload(true)}
               endContent={<Icon icon={"hugeicons:upload-04"} width={20} />}
             >
@@ -351,17 +384,17 @@ const InvoicesPage = () => {
             </Button>
           </div>
         </div>
-        <div className='flex justify-between items-center'>
-          <span className='text-default-400 text-small'>Total facturas</span>
-          <label className='flex items-center text-default-400 text-small'>
+        <div className="flex justify-between items-center">
+          <span className="text-default-400 text-small">Total facturas</span>
+          <label className="flex items-center text-default-400 text-small">
             Filas por página:
             <select
-              className='bg-transparent outline-none text-default-400 text-small'
+              className="bg-transparent outline-none text-default-400 text-small"
               onChange={onRowsPerPageChange}
             >
-              <option value='10'>10</option>
-              <option value='15'>15</option>
-              <option value='20'>20</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
             </select>
           </label>
         </div>
@@ -379,8 +412,8 @@ const InvoicesPage = () => {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className='py-2 px-2 flex justify-between items-center'>
-        <span className='w-[30%] text-small text-default-400'>
+      <div className="py-2 px-2 flex justify-between items-center">
+        <span className="w-[30%] text-small text-default-400">
           {selectedKeys === "all"
             ? "All items selected"
             : `${selectedKeys.size} of ${filteredItems.length} selected`}
@@ -389,24 +422,24 @@ const InvoicesPage = () => {
           isCompact
           showControls
           showShadow
-          color='primary'
+          color="primary"
           page={page}
           total={total}
           onChange={setPage}
         />
-        <div className='hidden sm:flex w-[30%] justify-end gap-2'>
+        <div className="hidden sm:flex w-[30%] justify-end gap-2">
           <Button
             isDisabled={total === 1}
-            size='sm'
-            variant='flat'
+            size="sm"
+            variant="flat"
             onPress={onPreviousPage}
           >
             Anterior
           </Button>
           <Button
             isDisabled={total === 1}
-            size='sm'
-            variant='flat'
+            size="sm"
+            variant="flat"
             onPress={onNextPage}
           >
             Siguiente
@@ -421,8 +454,8 @@ const InvoicesPage = () => {
       <ModalUpload
         isOpen={isOpenUpload}
         loading={loadingFile}
-        file={file}
-        setFile={setFile}
+        files={files}
+        setFiles={setFiles}
         handleUpload={handleUpload}
         onClose={() => onOpenUpload(false)}
       />
@@ -438,18 +471,18 @@ const InvoicesPage = () => {
         onClose={() => onOpenReponse(false)}
       />
       <Table
-        aria-label='Tabla de facturas'
+        aria-label="Tabla de facturas"
         isHeaderSticky
         bottomContent={bottomContent}
-        bottomContentPlacement='outside'
-        className='bg-background'
+        bottomContentPlacement="outside"
+        className="bg-background"
         classNames={{
           wrapper: "max-h-[724px]",
         }}
         selectedKeys={selectedKeys}
         sortDescriptor={sortDescriptor}
         topContent={topContent}
-        topContentPlacement='outside'
+        topContentPlacement="outside"
         onSelectionChange={setSelectedKeys}
         onSortChange={setSortDescriptor}
       >
@@ -457,7 +490,7 @@ const InvoicesPage = () => {
           {(column) => (
             <TableColumn
               key={column.uid}
-              align='center'
+              align="center"
               allowsSorting={column.sortable}
             >
               {column.name}
@@ -468,7 +501,7 @@ const InvoicesPage = () => {
           emptyContent={"No hay facturas encontradas"}
           items={sortedItems}
           isLoading={loading}
-          loadingContent={<Spinner label='Cargando...' />}
+          loadingContent={<Spinner label="Cargando..." />}
         >
           {sortedItems.map((item) => (
             <TableRow key={item.id}>

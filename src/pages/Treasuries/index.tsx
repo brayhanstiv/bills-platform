@@ -29,7 +29,7 @@ import * as XLSX from "xlsx";
 // Common
 import { Deptor, Treasury } from "../../common/types";
 import { currencyFormatter } from "../../common/methods";
-import { getAllTreasuries, uploadTreasury } from "../../common/api/treasury";
+import { getAllTreasuries, uploadTreasuries } from "../../common/api/treasury";
 
 // Components
 import ModalResponse from "../../components/Modals/ModalResponse";
@@ -70,7 +70,7 @@ const TreasuriesPage = () => {
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(1);
   const [data, setData] = React.useState<Treasury[]>([]);
-  const [file, setFile] = React.useState<File>();
+  const [files, setFiles] = React.useState<FileList>();
   const [modalResponse, setModalResponse] = React.useState<{
     type: "success" | "error";
     message: string;
@@ -168,10 +168,10 @@ const TreasuriesPage = () => {
         return <p>{treasury.deudores.length}</p>;
       case "actions":
         return (
-          <div className='flex justify-center cursor-pointer'>
+          <div className="flex justify-center cursor-pointer">
             <Link onPress={() => navigate(`deptors/${treasury.id}`)}>
               <Icon
-                className='text-gray-500'
+                className="text-gray-500"
                 icon={"solar:square-arrow-right-linear"}
                 width={24}
               />
@@ -217,7 +217,7 @@ const TreasuriesPage = () => {
     setPage(1);
   }, []);
 
-  /* const packFiles = (files: FileList) => {
+  const packFiles = (files: FileList) => {
     const formData = new FormData();
     [...files].forEach((file, i) => {
       formData.append(`file-${i}`, file, file.name);
@@ -234,7 +234,7 @@ const TreasuriesPage = () => {
 
   const uploadFiles = async (data: FormData) => {
     setLoadingFile(true);
-    const response = await uploadTreasury(data);
+    const response = await uploadTreasuries(data);
     setLoadingFile(false);
     onOpenReponse(true);
     if (response) {
@@ -248,9 +248,9 @@ const TreasuriesPage = () => {
         message: "No se pudo subir la factura correctamente",
       });
     }
-  }; */
+  };
 
-  const handleUpload = async () => {
+  /*  const handleUpload = async () => {
     const formData = new FormData();
     formData.append("file", file!);
     console.log(formData);
@@ -269,7 +269,7 @@ const TreasuriesPage = () => {
         message: "No se pudo subir la factura correctamente",
       });
     }
-  };
+  }; */
 
   const formatData = () => {
     let deptors: Deptor[] = [];
@@ -335,16 +335,16 @@ const TreasuriesPage = () => {
 
   const topContent = React.useMemo(() => {
     return (
-      <div className='flex flex-col gap-4'>
-        <div className='flex justify-between gap-3 items-end'>
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between gap-3 items-end">
           <Input
             isClearable
-            className='w-full sm:max-w-[44%]'
-            placeholder='Buscar por nombre...'
+            className="w-full sm:max-w-[44%]"
+            placeholder="Buscar por nombre..."
             startContent={
               <Icon
-                className='text-default-300'
-                icon='hugeicons:search-01'
+                className="text-default-300"
+                icon="hugeicons:search-01"
                 width={20}
               />
             }
@@ -352,16 +352,17 @@ const TreasuriesPage = () => {
             onClear={() => onClear()}
             onValueChange={onSearchChange}
           />
-          <div className='flex gap-3'>
+          <div className="flex gap-3">
             <DateRangePicker
               value={date}
+              aria-label="Date Range Picker"
               onChange={setDate}
-              className='max-w-[248px]'
+              className="max-w-[248px]"
             />
             <Dropdown>
-              <DropdownTrigger className='hidden sm:flex'>
+              <DropdownTrigger className="hidden sm:flex">
                 <Button
-                  color='danger'
+                  color="danger"
                   endContent={
                     <Icon
                       icon={"solar:download-minimalistic-linear"}
@@ -372,19 +373,19 @@ const TreasuriesPage = () => {
                   Exportar
                 </Button>
               </DropdownTrigger>
-              <DropdownMenu disallowEmptySelection aria-label='Table Columns'>
+              <DropdownMenu disallowEmptySelection aria-label="Table Columns">
                 <DropdownItem
-                  startContent={<Icon icon='bi:filetype-csv' width={24} />}
-                  className='capitalize'
+                  startContent={<Icon icon="bi:filetype-csv" width={24} />}
+                  className="capitalize"
                   onClick={downloadCSV}
                 >
                   CSV
                 </DropdownItem>
                 <DropdownItem
                   startContent={
-                    <Icon icon='vscode-icons:file-type-excel' width={24} />
+                    <Icon icon="vscode-icons:file-type-excel" width={24} />
                   }
-                  className='capitalize'
+                  className="capitalize"
                   onClick={downloadExcel}
                 >
                   Excel
@@ -392,37 +393,37 @@ const TreasuriesPage = () => {
               </DropdownMenu>
             </Dropdown>
             <Dropdown>
-              <DropdownTrigger className='hidden sm:flex'>
+              <DropdownTrigger className="hidden sm:flex">
                 <Button
                   endContent={
                     <Icon
-                      className='text-default-300'
-                      icon='hugeicons:arrow-down-01'
+                      className="text-default-300"
+                      icon="hugeicons:arrow-down-01"
                       width={20}
                     />
                   }
-                  variant='flat'
+                  variant="flat"
                 >
                   Columnas
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
                 disallowEmptySelection
-                aria-label='Table Columns'
+                aria-label="Table Columns"
                 closeOnSelect={false}
                 selectedKeys={visibleColumns}
-                selectionMode='multiple'
+                selectionMode="multiple"
                 onSelectionChange={setVisibleColumns}
               >
                 {columns.map((column) => (
-                  <DropdownItem key={column.uid} className='capitalize'>
+                  <DropdownItem key={column.uid} className="capitalize">
                     {column.name}
                   </DropdownItem>
                 ))}
               </DropdownMenu>
             </Dropdown>
             <Button
-              color='primary'
+              color="primary"
               onClick={() => onOpenUpload(true)}
               endContent={<Icon icon={"hugeicons:upload-04"} width={20} />}
             >
@@ -430,17 +431,17 @@ const TreasuriesPage = () => {
             </Button>
           </div>
         </div>
-        <div className='flex justify-between items-center'>
-          <span className='text-default-400 text-small'>Total recaudos</span>
-          <label className='flex items-center text-default-400 text-small'>
+        <div className="flex justify-between items-center">
+          <span className="text-default-400 text-small">Total recaudos</span>
+          <label className="flex items-center text-default-400 text-small">
             Filas por página:
             <select
-              className='bg-transparent outline-none text-default-400 text-small'
+              className="bg-transparent outline-none text-default-400 text-small"
               onChange={onRowsPerPageChange}
             >
-              <option value='10'>10</option>
-              <option value='15'>15</option>
-              <option value='20'>20</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
             </select>
           </label>
         </div>
@@ -457,8 +458,8 @@ const TreasuriesPage = () => {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className='py-2 px-2 flex justify-between items-center'>
-        <span className='w-[30%] text-small text-default-400'>
+      <div className="py-2 px-2 flex justify-between items-center">
+        <span className="w-[30%] text-small text-default-400">
           {selectedKeys === "all"
             ? "All items selected"
             : `${selectedKeys.size} of ${filteredItems.length} selected`}
@@ -467,24 +468,24 @@ const TreasuriesPage = () => {
           isCompact
           showControls
           showShadow
-          color='primary'
+          color="primary"
           page={page}
           total={total}
           onChange={setPage}
         />
-        <div className='hidden sm:flex w-[30%] justify-end gap-2'>
+        <div className="hidden sm:flex w-[30%] justify-end gap-2">
           <Button
             isDisabled={total === 1}
-            size='sm'
-            variant='flat'
+            size="sm"
+            variant="flat"
             onPress={onPreviousPage}
           >
             Anterior
           </Button>
           <Button
             isDisabled={total === 1}
-            size='sm'
-            variant='flat'
+            size="sm"
+            variant="flat"
             onPress={onNextPage}
           >
             Siguiente
@@ -499,8 +500,8 @@ const TreasuriesPage = () => {
       <ModalUpload
         isOpen={isOpenUpload}
         loading={loadingFile}
-        file={file}
-        setFile={setFile}
+        files={files}
+        setFiles={setFiles}
         handleUpload={handleUpload}
         onClose={() => onOpenUpload(false)}
       />
@@ -511,18 +512,18 @@ const TreasuriesPage = () => {
         onClose={() => onOpenReponse(false)}
       />
       <Table
-        aria-label='Tabla de facturas'
+        aria-label="Tabla de facturas"
         isHeaderSticky
         bottomContent={bottomContent}
-        bottomContentPlacement='outside'
-        className='bg-background'
+        bottomContentPlacement="outside"
+        className="bg-background"
         classNames={{
           wrapper: "max-h-[724px]",
         }}
         selectedKeys={selectedKeys}
         sortDescriptor={sortDescriptor}
         topContent={topContent}
-        topContentPlacement='outside'
+        topContentPlacement="outside"
         onSelectionChange={setSelectedKeys}
         onSortChange={setSortDescriptor}
       >
@@ -545,7 +546,7 @@ const TreasuriesPage = () => {
           emptyContent={"No hay recaudos encontrados"}
           items={sortedItems}
           isLoading={loading}
-          loadingContent={<Spinner label='Cargando...' />}
+          loadingContent={<Spinner label="Cargando..." />}
         >
           {sortedItems.map((item) => (
             <TableRow key={item.id}>

@@ -15,13 +15,14 @@ import Logo from "../common/assets/img/lait.png";
 import { cn } from "../common/cn";
 
 // Firebase
-import { signOut } from "firebase/auth";
+import { signOut, User } from "firebase/auth";
 import { auth } from "../firebase_config";
 
 const Treasury = () => {
   // Hooks
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const isMobile = useMediaQuery("(max-width: 1024px)");
+  const user: User = JSON.parse(sessionStorage.getItem("user")!);
   const navigate = useNavigate();
 
   const isCompact = isCollapsed || isMobile;
@@ -30,27 +31,31 @@ const Treasury = () => {
     setIsCollapsed((prev) => !prev);
   }, []);
 
+  React.useEffect(() => {
+    console.log(user);
+  }, []);
+
   const logout = async () => {
     await signOut(auth);
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("user");
     navigate("/login");
   };
 
   return (
-    <section className='flex min-h-screen'>
-      <div className='h-dvh'>
+    <section className="flex min-h-screen">
+      <div className="h-dvh">
         <div
           className={cn(
             "relative flex h-full flex-1 flex-col border-r-small border-divider p-6",
             !isCompact && "w-72"
           )}
         >
-          <div className='flex justify-center items-center gap-2 px-2'>
-            <div className='flex h-8 w-8 items-center justify-center'>
-              <img className='w-24' src={Logo} />
+          <div className="flex justify-center items-center gap-2 px-2">
+            <div className="flex h-8 w-8 items-center justify-center">
+              <img className="w-24" src={Logo} />
             </div>
             {!isCompact && (
-              <span className='text-small font-bold'>LAIT Smart Documents</span>
+              <span className="text-small font-bold">LAIT Smart Documents</span>
             )}
           </div>
           <Spacer y={12} />
@@ -60,28 +65,26 @@ const Treasury = () => {
               isCompact && "justify-center"
             )}
           >
-            <Avatar
-              isBordered
-              size='sm'
-              src='https://i.pravatar.cc/150?u=a04258114e29026708c'
-            />
+            <Avatar isBordered size="sm" src={user.photoURL!} />
             {!isCompact && (
-              <div className='flex flex-col'>
-                <p className='text-small font-medium text-default-600'>
-                  John Doe
+              <div className="flex flex-col">
+                <p className="text-small font-medium text-default-600 capitalize">
+                  {user.displayName?.split(" ")[0] +
+                    " " +
+                    user.displayName?.split(" ")[1]}
                 </p>
-                <p className='text-tiny text-default-400'>Product Designer</p>
+                <p className="text-tiny text-default-400">{user.email}</p>
               </div>
             )}
           </div>
-          <ScrollShadow className='-mr-6 h-full max-h-full py-6 pr-6'>
+          <ScrollShadow className="-mr-6 h-full max-h-full py-6 pr-6">
             <TreasurySidebar
-              defaultSelectedKey='home'
+              defaultSelectedKey="home"
               items={treasuryItems}
               isCompact={isCompact}
             />
           </ScrollShadow>
-          <div className='mt-auto flex flex-col'>
+          <div className="mt-auto flex flex-col">
             <Button
               className={cn(
                 "text-default-500 data-[hover=true]:text-foreground",
@@ -90,21 +93,21 @@ const Treasury = () => {
               onClick={logout}
               startContent={
                 <Icon
-                  className='rotate-180 text-default-500'
-                  icon='solar:minus-circle-line-duotone'
+                  className="rotate-180 text-default-500"
+                  icon="solar:minus-circle-line-duotone"
                   width={24}
                 />
               }
-              variant='light'
+              variant="light"
             >
               {!isCompact && "Cerrar Sesión"}
             </Button>
           </div>
         </div>
       </div>
-      <section className='flex flex-col flex-grow overflow-auto'>
+      <section className="flex flex-col flex-grow overflow-auto">
         <Navbar onToggle={onToggle} isCompact={isCompact} />
-        <div className='w-full p-10'>
+        <div className="w-full p-10">
           <Outlet />
         </div>
       </section>

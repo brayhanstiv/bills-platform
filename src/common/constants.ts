@@ -4,9 +4,21 @@ import { SidebarItem } from "./types";
 export const treasuryItems: SidebarItem[] = [
   {
     key: "home",
-    href: "/admin/home",
+    href: "home",
     icon: "solar:home-2-linear",
     title: "Inicio",
+  },
+  {
+    key: "payment-offices",
+    href: "payment-offices",
+    icon: "solar:buildings-linear",
+    title: "Pagadurías",
+  },
+  {
+    key: "trust",
+    href: "trusts",
+    icon: "solar:buildings-2-linear",
+    title: "Fideicomisos",
   },
   {
     key: "operations",
@@ -63,7 +75,7 @@ export const treasuryItems: SidebarItem[] = [
 export const invoiceItems: SidebarItem[] = [
   {
     key: "home",
-    href: "/admin/home",
+    href: "home",
     icon: "solar:home-2-linear",
     title: "Inicio",
   },

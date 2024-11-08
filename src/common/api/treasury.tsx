@@ -35,7 +35,9 @@ export const getTreasuryById = async (id: string): Promise<Treasury | null> => {
   }
 };
 
-export const uploadTreasury = async (formData: FormData): Promise<boolean> => {
+export const uploadTreasuries = async (
+  formData: FormData
+): Promise<boolean> => {
   try {
     const serviceUri = `https://backendfacturacion-dot-chat-socialcog.ue.r.appspot.com/Treasuries/`;
     const response = await axios.post(serviceUri, formData, {

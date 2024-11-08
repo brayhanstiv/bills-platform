@@ -124,8 +124,8 @@ const TreasurySidebar = React.forwardRef<HTMLElement, TreasurySidebarProps>(
             title={isCompact || isNestType ? null : item.title}
           >
             {isCompact ? (
-              <Tooltip content={item.title} placement='right'>
-                <div className='flex w-full items-center justify-center'>
+              <Tooltip content={item.title} placement="right">
+                <div className="flex w-full items-center justify-center">
                   {item.icon ? (
                     <Icon
                       className={cn(
@@ -182,7 +182,7 @@ const TreasurySidebar = React.forwardRef<HTMLElement, TreasurySidebarProps>(
                         list: cn("border-l border-default-200 pl-4"),
                       }}
                       items={item.items}
-                      variant='flat'
+                      variant="flat"
                     >
                       {item.items.map(renderItem)}
                     </Listbox>
@@ -213,10 +213,13 @@ const TreasurySidebar = React.forwardRef<HTMLElement, TreasurySidebarProps>(
           <ListboxItem
             {...item}
             key={item.key}
-            onPress={() => navigate(item.href!)}
             endContent={
               isCompact || hideEndContent ? null : item.endContent ?? null
             }
+            onClick={(e) => {
+              e.preventDefault();
+              navigate(item.href!);
+            }}
             startContent={
               isCompact ? null : item.icon ? (
                 <Icon
@@ -235,8 +238,8 @@ const TreasurySidebar = React.forwardRef<HTMLElement, TreasurySidebarProps>(
             title={isCompact ? null : item.title}
           >
             {isCompact ? (
-              <Tooltip content={item.title} placement='right'>
-                <div className='flex w-full items-center justify-center'>
+              <Tooltip content={item.title} placement="right">
+                <div className="flex w-full items-center justify-center">
                   {item.icon ? (
                     <Icon
                       className={cn(
@@ -263,13 +266,13 @@ const TreasurySidebar = React.forwardRef<HTMLElement, TreasurySidebarProps>(
         key={isCompact ? "compact" : "default"}
         ref={ref}
         hideSelectedIcon
-        as='nav'
+        as="nav"
         className={cn("list-none", className)}
         classNames={{
           ...classNames,
           list: cn("items-center", classNames?.list),
         }}
-        color='default'
+        color="default"
         itemClasses={{
           ...itemClasses,
           base: cn(
@@ -283,8 +286,8 @@ const TreasurySidebar = React.forwardRef<HTMLElement, TreasurySidebarProps>(
         }}
         items={items}
         selectedKeys={[selected] as unknown as Selection}
-        selectionMode='single'
-        variant='flat'
+        selectionMode="single"
+        variant="flat"
         onSelectionChange={(keys) => {
           const key = Array.from(keys)[0];
 

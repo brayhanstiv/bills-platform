@@ -9,6 +9,7 @@ import {
 } from "@nextui-org/react";
 import { Icon } from "@iconify/react";
 import { cn } from "@nextui-org/react";
+import { User } from "firebase/auth";
 
 type AdminNavbarProps = {
   onToggle?: () => void;
@@ -17,6 +18,7 @@ type AdminNavbarProps = {
 
 const AdminNavbar = (props: AdminNavbarProps) => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const user: User = JSON.parse(sessionStorage.getItem("user")!);
 
   return (
     <Navbar
@@ -28,15 +30,15 @@ const AdminNavbar = (props: AdminNavbarProps) => {
         wrapper: "w-full justify-center",
         item: "hidden md:flex",
       }}
-      height='60px'
-      maxWidth='full'
+      height="60px"
+      maxWidth="full"
       isMenuOpen={isMenuOpen}
       onMenuOpenChange={setIsMenuOpen}
     >
       {/* Left Content */}
       <NavbarBrand>
         <Icon
-          className='text-gray-500 mr-2 cursor-pointer'
+          className="text-gray-500 mr-2 cursor-pointer"
           icon={
             props.isCompact
               ? "hugeicons:sidebar-right-01"
@@ -45,23 +47,19 @@ const AdminNavbar = (props: AdminNavbarProps) => {
           width={24}
           onClick={props.onToggle}
         />
-        <p className='font-bold text-inherit'>LAIT Smart Documents</p>
+        <p className="font-bold text-inherit">LAIT Smart Documents</p>
       </NavbarBrand>
 
       {/* Right Content */}
-      <NavbarContent className='hidden md:flex' justify='end'>
-        <NavbarItem className='ml-2 !flex gap-2'>
+      <NavbarContent className="hidden md:flex" justify="end">
+        <NavbarItem className="ml-2 !flex gap-2">
           <div
             className={cn(
               "flex items-center gap-3 px-4",
               props.isCompact && "justify-center"
             )}
           >
-            <Avatar
-              isBordered
-              size='sm'
-              src='https://i.pravatar.cc/150?u=a04258114e29026708c'
-            />
+            <Avatar isBordered size="sm" src={user.photoURL!} />
           </div>
         </NavbarItem>
       </NavbarContent>
